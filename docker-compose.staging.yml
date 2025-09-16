@@ -3,16 +3,16 @@ services:
     build: .
     restart: unless-stopped
     environment:
-      # Production database configuration
+      # Staging database configuration
       - DATABASE_URL=postgresql://pbbdbuser:Govinda2025%23@host.docker.internal:5432/pure_bhakti_vault
       - DB_HOST=host.docker.internal
       - DB_PORT=5432
       - DB_NAME=pure_bhakti_vault
       - DB_USER=pbbdbuser
       - DB_PASSWORD=Govinda2025#
-      - ENVIRONMENT=production
-      # Production CORS origins
-      - CORS_ORIGINS=https://www.purebhaktibase.com,https://purebhaktibase.com,https://api.purebhaktibase.com,https://app.purebhaktibase.com
+      - ENVIRONMENT=staging
+      # Allow all origins for testing
+      - CORS_ORIGINS=*
     expose:
       - "8000"
     volumes:
@@ -28,12 +28,9 @@ services:
     image: nginx:alpine
     restart: unless-stopped
     ports:
-      - "8080:80"   # API on port 8080
-      - "8443:443"  # API SSL on port 8443
+      - "8080:80"   # HTTP only for staging
     volumes:
-      - ./nginx/nginx-prod.conf:/etc/nginx/nginx.conf:ro
-      - ./ssl/certbot/conf:/etc/letsencrypt:ro
-      - ./ssl/certbot/www:/var/www/certbot:ro
+      - ./nginx/nginx-staging.conf:/etc/nginx/nginx.conf:ro
     depends_on:
       - api
     healthcheck:
@@ -42,15 +39,7 @@ services:
       timeout: 10s
       retries: 3
 
-  certbot:
-    image: certbot/certbot
-    restart: "no"
-    volumes:
-      - ./ssl/certbot/conf:/etc/letsencrypt
-      - ./ssl/certbot/www:/var/www/certbot
-    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
-
 networks:
   default:
-    name: purebhakti_network
+    name: purebhakti_staging_network
     external: false

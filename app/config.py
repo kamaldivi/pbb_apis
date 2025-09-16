@@ -13,6 +13,11 @@ class Settings(BaseSettings):
     database_user: str = "postgres"
     database_password: str = "postgres"
 
+    # Database connection timeout settings (in seconds)
+    database_connect_timeout: int = 30
+    database_command_timeout: int = 60
+    database_pool_timeout: int = 30
+
     # Legacy fields for backwards compatibility
     db_host: Optional[str] = None
     db_port: Optional[int] = None
