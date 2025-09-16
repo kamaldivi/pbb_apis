@@ -1,0 +1,51 @@
+services:
+  api:
+    build: .
+    restart: unless-stopped
+    environment:
+      # Production database configuration
+      - DATABASE_URL=postgresql://pbbdbuser:Govinda2025%23@host.docker.internal:5432/pure_bhakti_vault
+      - DB_HOST=host.docker.internal
+      - DB_PORT=5432
+      - DB_NAME=pure_bhakti_vault
+      - DB_USER=pbbdbuser
+      - DB_PASSWORD=Govinda2025#
+      - ENVIRONMENT=production
+      # Production CORS origins
+      - CORS_ORIGINS=https://www.purebhaktibase.com,https://purebhaktibase.com,https://api.purebhaktibase.com,https://app.purebhaktibase.com
+    expose:
+      - "8000"
+    volumes:
+      - ./app:/app/app:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx-prod.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl/certbot/conf:/etc/letsencrypt:ro
+      - ./ssl/certbot/www:/var/www/certbot:ro
+    depends_on:
+      - api
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  certbot:
+    image: certbot/certbot
+    restart: "no"
+    volumes:
+      - ./ssl/certbot/conf:/etc/letsencrypt
+      - ./ssl/certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
