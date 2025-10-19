@@ -44,5 +44,5 @@ services:
 
 networks:
   default:
-    name: purebhakti_network
-    external: false
+    name: purebhakti_shared_network
+    external: true

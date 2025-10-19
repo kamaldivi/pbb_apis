@@ -21,6 +21,7 @@ class BookBase(BaseModel):
     toc_pages: Optional[Any] = None  # Will be serialized to string
     verse_pages: Optional[Any] = None  # Will be serialized to string
     glossary_pages: Optional[Any] = None  # Will be serialized to string
+    book_summary: Optional[str] = None
 
 
 class Book(BookBase):
@@ -44,6 +45,7 @@ class ContentBase(BaseModel):
     book_id: int
     page_number: int
     page_content: Optional[str] = None
+    ai_page_content: Optional[str] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
@@ -152,3 +154,33 @@ class BookListResponse(BaseModel):
     total: int
     page: int
     size: int
+
+
+class TableOfContentsBase(BaseModel):
+    book_id: int
+    parent_toc_id: Optional[int] = None
+    toc_level: Optional[int] = None
+    toc_label: Optional[str] = None
+    page_label: Optional[str] = None
+    page_number: Optional[int] = None
+
+
+class TableOfContents(TableOfContentsBase):
+    toc_id: int
+
+    class Config:
+        from_attributes = True
+
+
+class TocResponse(BaseModel):
+    table_of_contents: List[TableOfContents]
+    total: int
+    book_id: int
+
+
+class TocListResponse(BaseModel):
+    table_of_contents: List[TableOfContents]
+    total: int
+    page: int
+    size: int
+    book_id: int

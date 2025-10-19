@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from typing import List, Optional
-from app.models.models import Book, Content, Glossary, PageMap
+from app.models.models import Book, Content, Glossary, PageMap, TableOfContents
 
 
 class BookService:
@@ -138,3 +138,26 @@ class PageMapService:
             PageMap.book_id == book_id,
             PageMap.page_type == 'Core'
         ).scalar()
+
+
+class TocService:
+    @staticmethod
+    def get_book_toc(db: Session, book_id: int, skip: int = 0, limit: int = 100) -> List[TableOfContents]:
+        """Get table of contents for a book with pagination"""
+        return db.query(TableOfContents).filter(
+            TableOfContents.book_id == book_id
+        ).order_by(TableOfContents.toc_id).offset(skip).limit(limit).all()
+
+    @staticmethod
+    def get_book_toc_count(db: Session, book_id: int) -> int:
+        """Get total count of table of contents entries for a book"""
+        return db.query(func.count(TableOfContents.toc_id)).filter(
+            TableOfContents.book_id == book_id
+        ).scalar()
+
+    @staticmethod
+    def get_full_book_toc(db: Session, book_id: int) -> List[TableOfContents]:
+        """Get complete table of contents for a book without pagination"""
+        return db.query(TableOfContents).filter(
+            TableOfContents.book_id == book_id
+        ).order_by(TableOfContents.toc_id).all()

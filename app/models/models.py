@@ -24,6 +24,7 @@ class Book(Base):
     toc_pages = Column(INT4RANGE)
     verse_pages = Column(INT4RANGE)
     glossary_pages = Column(INT4RANGE)
+    book_summary = Column(Text)
 
 
 class Content(Base):
@@ -33,6 +34,7 @@ class Content(Base):
     book_id = Column(Integer, ForeignKey("book.book_id"), nullable=False, index=True)
     page_number = Column(Integer, nullable=False)
     page_content = Column(Text)
+    ai_page_content = Column(Text)
     created_at = Column(DateTime)
     updated_at = Column(DateTime)
 
@@ -66,6 +68,21 @@ class PageMap(Base):
     book = relationship("Book", back_populates="page_maps")
 
 
+class TableOfContents(Base):
+    __tablename__ = "table_of_contents"
+
+    toc_id = Column(Integer, primary_key=True, index=True)
+    book_id = Column(Integer, ForeignKey("book.book_id"), nullable=False, index=True)
+    parent_toc_id = Column(Integer)
+    toc_level = Column(Integer)
+    toc_label = Column(String(500))
+    page_label = Column(String(100))
+    page_number = Column(Integer)
+
+    book = relationship("Book", back_populates="table_of_contents")
+
+
 Book.contents = relationship("Content", back_populates="book")
 Book.glossary_terms = relationship("Glossary", back_populates="book")
 Book.page_maps = relationship("PageMap", back_populates="book")
+Book.table_of_contents = relationship("TableOfContents", back_populates="book")

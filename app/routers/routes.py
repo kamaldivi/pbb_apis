@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.services.services import BookService, ContentService, GlossaryService, PageMapService
-from app.schemas.schemas import Book, BookListResponse, Content, ContentResponse, ContentListResponse, GlossaryWithBook, GlossaryListResponse, GlossaryTermResponse, CorePageInfo, CorePagesResponse, PageMap, FullPageMapResponse
+from app.services.services import BookService, ContentService, GlossaryService, PageMapService, TocService
+from app.schemas.schemas import Book, BookListResponse, Content, ContentResponse, ContentListResponse, GlossaryWithBook, GlossaryListResponse, GlossaryTermResponse, CorePageInfo, CorePagesResponse, PageMap, FullPageMapResponse, TableOfContents, TocResponse, TocListResponse
 
 router = APIRouter()
 
@@ -230,6 +230,51 @@ def get_full_page_map(
 
     return FullPageMapResponse(
         page_maps=page_maps,
+        total=total,
+        page=page,
+        size=size,
+        book_id=book_id
+    )
+
+
+@router.get("/books/{book_id}/toc", response_model=TocResponse)
+def get_book_toc(book_id: int, db: Session = Depends(get_db)):
+    """Get table of contents for a book"""
+    # First check if book exists
+    book = BookService.get_book_by_id(db, book_id)
+    if not book:
+        raise HTTPException(status_code=404, detail="Book not found")
+
+    # Get the complete table of contents for the book
+    toc_entries = TocService.get_full_book_toc(db, book_id)
+    total = len(toc_entries)
+
+    return TocResponse(
+        table_of_contents=toc_entries,
+        total=total,
+        book_id=book_id
+    )
+
+
+@router.get("/books/{book_id}/toc/paginated", response_model=TocListResponse)
+def get_book_toc_paginated(
+    book_id: int,
+    page: int = Query(1, ge=1, description="Page number"),
+    size: int = Query(50, ge=1, le=200, description="Number of items per page"),
+    db: Session = Depends(get_db)
+):
+    """Get table of contents for a book with pagination"""
+    # First check if book exists
+    book = BookService.get_book_by_id(db, book_id)
+    if not book:
+        raise HTTPException(status_code=404, detail="Book not found")
+
+    skip = (page - 1) * size
+    toc_entries = TocService.get_book_toc(db, book_id, skip=skip, limit=size)
+    total = TocService.get_book_toc_count(db, book_id)
+
+    return TocListResponse(
+        table_of_contents=toc_entries,
         total=total,
         page=page,
         size=size,
