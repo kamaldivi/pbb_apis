@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, Text, DateTime, BigInteger, Numeric, ForeignKey
 from sqlalchemy.dialects.postgresql import INT4RANGE
 from sqlalchemy.orm import relationship
+from pgvector.sqlalchemy import Vector
 from app.database import Base
 
 
@@ -80,6 +81,20 @@ class TableOfContents(Base):
     page_number = Column(Integer)
 
     book = relationship("Book", back_populates="table_of_contents")
+
+
+class GlossaryEmbedding(Base):
+    __tablename__ = "glossary_embeddings"
+
+    glossary_id = Column(Integer, ForeignKey("glossary.glossary_id", ondelete="CASCADE"), primary_key=True, index=True)
+    book_id = Column(Integer, ForeignKey("book.book_id", ondelete="CASCADE"), nullable=False, index=True)
+    term = Column(String(255), nullable=False)
+    embedding = Column(Vector(1024), nullable=False)
+    created_at = Column(DateTime)
+    updated_at = Column(DateTime)
+
+    book = relationship("Book")
+    glossary = relationship("Glossary")
 
 
 Book.contents = relationship("Content", back_populates="book")

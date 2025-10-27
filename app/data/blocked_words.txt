@@ -1,0 +1,42 @@
+# Pure Bhakti API - Blocked Words List
+# Add one word per line (case-insensitive)
+# Lines starting with # are comments
+
+# Profanity
+sex
+porn
+xxx
+fuck
+shit
+damn
+hell
+ass
+bitch
+
+# Sexual content
+nude
+naked
+erotic
+sexual
+
+# Violence
+kill
+murder
+death
+blood
+gun
+weapon
+
+# Drugs
+drug
+weed
+cocaine
+heroin
+meth
+
+# Hate speech
+hate
+racist
+nazi
+
+# Add more words as needed...

@@ -184,3 +184,65 @@ class TocListResponse(BaseModel):
     page: int
     size: int
     book_id: int
+
+
+class GlossaryEmbeddingBase(BaseModel):
+    glossary_id: int
+    book_id: int
+    term: str
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+
+class GlossaryEmbeddingWithSimilarity(BaseModel):
+    glossary_id: int
+    book_id: int
+    term: str
+    description: str
+    book_name: str
+    similarity: float
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+
+class SemanticSearchRequest(BaseModel):
+    query: str = Field(..., description="Query text to search for similar glossary terms")
+    limit: int = Field(10, ge=1, le=100, description="Number of results to return")
+    book_id: Optional[int] = Field(None, description="Optional: Filter results by book_id")
+    similarity_threshold: float = Field(0.5, ge=0.0, le=1.0, description="Minimum similarity score (0-1)")
+
+
+class SemanticSearchResponse(BaseModel):
+    results: List[GlossaryEmbeddingWithSimilarity]
+    total: int
+    query: str
+    book_id: Optional[int] = None
+
+
+class GlossarySearchRequest(BaseModel):
+    query: str = Field(..., min_length=1, description="Search query text")
+    limit: int = Field(5, ge=1, le=20, description="Number of results to return (max 20)")
+    book_id: Optional[int] = Field(None, description="Optional: Filter results by book_id")
+
+
+class GlossarySearchResult(BaseModel):
+    term: str
+    description: str
+    book_name: str
+    book_id: int
+
+    class Config:
+        from_attributes = True
+
+
+class GlossarySearchResponse(BaseModel):
+    results: List[GlossarySearchResult]
+    total_found: int
+    query: str
+    message: Optional[str] = None
