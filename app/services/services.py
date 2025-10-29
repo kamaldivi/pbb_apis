@@ -180,6 +180,13 @@ class PageMapService:
             PageMap.page_type == 'Core'
         ).scalar()
 
+    @staticmethod
+    def get_all_pages(db: Session, book_id: int) -> List[PageMap]:
+        """Get all pages for a book without pagination"""
+        return db.query(PageMap).filter(
+            PageMap.book_id == book_id
+        ).order_by(PageMap.page_number).all()
+
 
 class TocService:
     @staticmethod

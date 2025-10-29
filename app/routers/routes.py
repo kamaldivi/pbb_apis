@@ -364,25 +364,23 @@ def get_core_pages(book_id: int, db: Session = Depends(get_db)):
 @router.get("/books/{book_id}/pages", response_model=FullPageMapResponse)
 def get_full_page_map(
     book_id: int,
-    page: int = Query(1, ge=1, description="Page number"),
-    size: int = Query(50, ge=1, le=200, description="Number of items per page"),
     db: Session = Depends(get_db)
 ):
-    """Get full page map for a book with pagination"""
+    """Get full page map for a book (all pages, no pagination)"""
     # First check if book exists
     book = BookService.get_book_by_id(db, book_id)
     if not book:
         raise HTTPException(status_code=404, detail="Book not found")
 
-    skip = (page - 1) * size
-    page_maps = PageMapService.get_full_page_map(db, book_id, skip=skip, limit=size)
-    total = PageMapService.get_page_map_count(db, book_id)
+    # Get all pages without pagination
+    page_maps = PageMapService.get_all_pages(db, book_id)
+    total = len(page_maps)
 
     return FullPageMapResponse(
         page_maps=page_maps,
         total=total,
-        page=page,
-        size=size,
+        page=1,
+        size=total,
         book_id=book_id
     )
 
